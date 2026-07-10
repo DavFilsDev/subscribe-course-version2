@@ -16,13 +16,9 @@ public class HelloWorldController {
 
   @GetMapping("/hello")
   @SneakyThrows
-  public String helloWorld(@RequestParam String to,
-  @RequestParam String title, @RequestParam String content) {
-    var event = SendEmailRequested.builder()
-            .to(to)
-            .pdfTitle(title)
-            .pdfContent(content)
-            .build();
+  public String helloWorld(
+      @RequestParam String to, @RequestParam String title, @RequestParam String content) {
+    var event = SendEmailRequested.builder().to(to).pdfTitle(title).pdfContent(content).build();
     eventProducer.accept(List.of(event));
     return "... pdf sent successfully";
   }

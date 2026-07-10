@@ -1,8 +1,8 @@
 package com.example.demo.endpoint.event.consumer;
 
 import com.example.demo.endpoint.event.model.SendEmailRequested;
-import com.example.demo.mail.Mailer;
 import com.example.demo.mail.Email;
+import com.example.demo.mail.Mailer;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
@@ -20,36 +20,36 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class SendEmailConfConsumer implements Consumer<SendEmailRequested> {
 
-    private final Mailer mailer;
+  private final Mailer mailer;
 
-    @Override
-    @SneakyThrows
-    public void accept(SendEmailRequested event) {
+  @Override
+  @SneakyThrows
+  public void accept(SendEmailRequested event) {
 
-        File tempPdfFile = File.createTempFile("document-", ".pdf");
+    File tempPdfFile = File.createTempFile("document-", ".pdf");
 
-        try (FileOutputStream fos = new FileOutputStream(tempPdfFile)) {
-            Document document = new Document();
-            PdfWriter.getInstance(document, fos);
+    try (FileOutputStream fos = new FileOutputStream(tempPdfFile)) {
+      Document document = new Document();
+      PdfWriter.getInstance(document, fos);
 
-            document.open();
-            document.add(new Paragraph("Hello,"));
-            document.add(new Paragraph("Here is your document"));
-            document.close();
-        }
-
-        InternetAddress recipient = new InternetAddress(event.getTo());
-
-        mailer.accept(new Email(
-                recipient,
-                Collections.emptyList(),
-                Collections.emptyList(),
-                "Here is your document",
-                "<html><body><p>Hello you are subscribe in lv2</p></body></html>",
-                List.of(tempPdfFile)
-        ));
-
-        // 4. Nettoyage du fichier temporaire
-        tempPdfFile.delete();
+      document.open();
+      document.add(new Paragraph("Hello,"));
+      document.add(new Paragraph("Here is your document"));
+      document.close();
     }
+
+    InternetAddress recipient = new InternetAddress(event.getTo());
+
+    mailer.accept(
+        new Email(
+            recipient,
+            Collections.emptyList(),
+            Collections.emptyList(),
+            "Here is your document",
+            "<html><body><p>Hello you are subscribe in lv2</p></body></html>",
+            List.of(tempPdfFile)));
+
+    // 4. Nettoyage du fichier temporaire
+    tempPdfFile.delete();
+  }
 }
