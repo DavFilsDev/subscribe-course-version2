@@ -1,25 +1,36 @@
 package com.example.demo.endpoint.rest.controller;
 
-import com.example.demo.endpoint.event.EventProducer;
+import com.example.demo.endpoint.event.consumer.SendEmailConfConsumer; // import ajouté
 import com.example.demo.endpoint.event.model.SendEmailRequested;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 public class HelloWorldController {
-  private final EventProducer<SendEmailRequested> eventProducer;
+
+  private final SendEmailConfConsumer sendEmailConfConsumer;
 
   @GetMapping("/hello")
-  @SneakyThrows
   public String helloWorld(
       @RequestParam String to, @RequestParam String title, @RequestParam String content) {
+
     var event = SendEmailRequested.builder().to(to).pdfTitle(title).pdfContent(content).build();
-    eventProducer.accept(List.of(event));
+
+    CompletableFuture.runAsync(
+        () -> {
+          try {
+            sendEmailConfConsumer.accept(event);
+          } catch (Exception e) {
+            log.error("Error while sending email", e);
+          }
+        });
+
     return "... pdf sent successfully";
   }
 }

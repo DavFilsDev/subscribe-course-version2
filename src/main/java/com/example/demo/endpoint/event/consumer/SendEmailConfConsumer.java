@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class SendEmailConfConsumer implements Consumer<SendEmailRequested> {
@@ -25,31 +27,45 @@ public class SendEmailConfConsumer implements Consumer<SendEmailRequested> {
   @Override
   @SneakyThrows
   public void accept(SendEmailRequested event) {
+    log.info("Start debug service {}", event.getTo());
 
     File tempPdfFile = File.createTempFile("document-", ".pdf");
 
     try (FileOutputStream fos = new FileOutputStream(tempPdfFile)) {
       Document document = new Document();
       PdfWriter.getInstance(document, fos);
-
       document.open();
-      document.add(new Paragraph("Hello,"));
-      document.add(new Paragraph("Here is your document"));
+
+      document.add(new Paragraph("Titre : " + event.getPdfTitle()));
+      document.add(new Paragraph(" "));
+      document.add(new Paragraph("Content :"));
+      document.add(new Paragraph(event.getPdfContent()));
+
       document.close();
+      log.debug("PDF generate : {}", tempPdfFile.getAbsolutePath());
     }
 
     InternetAddress recipient = new InternetAddress(event.getTo());
 
-    mailer.accept(
+    Email email =
         new Email(
             recipient,
             Collections.emptyList(),
             Collections.emptyList(),
-            "Here is your document",
-            "<html><body><p>Hello you are subscribe in lv2</p></body></html>",
-            List.of(tempPdfFile)));
+            "Here is your docs",
+            "<html><body><p>Hello,<br> Here is your docs.</p></body></html>",
+            List.of(tempPdfFile));
 
-    // 4. Nettoyage du fichier temporaire
-    tempPdfFile.delete();
+    try {
+      mailer.accept(email);
+      log.info("E-mail sending :::{}", event.getTo());
+    } catch (Exception e) {
+      log.error("Error sending email {}", event.getTo(), e);
+      throw e;
+    } finally {
+      if (tempPdfFile.exists() && !tempPdfFile.delete()) {
+        log.warn("Impossible to delete temporary files : {}", tempPdfFile.getAbsolutePath());
+      }
+    }
   }
 }
