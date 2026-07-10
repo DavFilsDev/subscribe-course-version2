@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 public class HelloWorldController {
-    private final EventProducer<SendEmailRequested> eventProducer;
+  private final EventProducer<SendEmailRequested> eventProducer;
 
-    @GetMapping("/hello")
-    @SneakyThrows
-    public String helloWorld(@RequestParam String to) {
-        var event = SendEmailRequested.builder().to(to).build();
-        eventProducer.accept(List.of(event));
-        return "... world!";
-    }
+  @GetMapping("/hello")
+  @SneakyThrows
+  public String helloWorld(@RequestParam String to) {
+    var event = SendEmailRequested.builder().to(to).build();
+    eventProducer.accept(List.of(event));
+    return "... world!";
+  }
 }
