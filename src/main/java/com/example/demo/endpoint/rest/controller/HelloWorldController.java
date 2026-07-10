@@ -1,6 +1,6 @@
 package com.example.demo.endpoint.rest.controller;
 
-import com.example.demo.endpoint.event.consumer.SendEmailConfConsumer;
+import com.example.demo.endpoint.event.consumer.SendEmailConfConsumer; // import ajouté
 import com.example.demo.endpoint.event.model.SendEmailRequested;
 import java.util.concurrent.CompletableFuture;
 import lombok.AllArgsConstructor;
@@ -27,7 +27,7 @@ public class HelloWorldController {
           try {
             sendEmailConfConsumer.accept(event);
           } catch (Exception e) {
-            log.error("Error while sending email", e);
+            log.error("Error sending email", e);
           }
         });
 
